@@ -102,7 +102,7 @@ default_args = {
 with DAG('record_weather_dags',
          start_date=days_ago(1),
          max_active_runs=1,
-         schedule_interval="@hourly",
+         schedule_interval=timedelta(minutes=5),
          default_args=default_args,
          catchup=False,
          tags=['weather', 'toronto']

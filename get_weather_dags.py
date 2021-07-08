@@ -11,7 +11,7 @@ from airflow.utils.dates import days_ago
 from airflow.models import DAG
 from airflow.operators.python import PythonOperator
 from airflow.operators.dummy import DummyOperator
-from airflow.operators.email import EmailOperator
+# from airflow.operators.email import EmailOperator
 from airflow.utils.task_group import TaskGroup
 
 url = "http://api.openweathermap.org/data/2.5/weather?"
@@ -136,22 +136,7 @@ with DAG('record_weather_dags',
                 op_kwargs={'city': city, 'filename': filename}
             )
     
-    # weather_toronto = PythonOperator(
-    #     task_id='weather_toronto',
-    #     python_callable=UpdateCsvFile,
-    #     op_kwargs={'city': 'Toronto', 'filename': filename},
-    #     dag=dag,
-    # )
-
-    # weather_montreal = PythonOperator(
-    #     task_id='weather_montreal',
-    #     python_callable=UpdateCsvFile,
-    #     op_kwargs={'city': 'Montreal', 'filename': filename},
-    #     dag=dag,
-    # )
     t0 >> weather_group >> print_msg
-
-    # t0 >> [weather_toronto, weather_montreal] >> send_email
 
 # Testing locally 
 # if __name__ == "__main__":

@@ -15,7 +15,7 @@ from airflow.operators.email import EmailOperator
 from airflow.utils.task_group import TaskGroup
 
 url = "http://api.openweathermap.org/data/2.5/weather?"
-filename = "export/weather.csv"
+filename = "weather.csv"
 cities = ['Toronto', 'Montreal']
 
 def FetchOpenWeather(city):
@@ -81,6 +81,12 @@ def UpdateCsvFile(city, filename):
     
     print(city_data_df)
 
+def PrintMsg():
+    """
+    Print out a msg in log file to finishe the DAG
+    """
+    print("The weather information has been retrieved.")
+
 # Default settings applied to all tasks
 default_args = {
     'owner': 'kelvin',
@@ -88,7 +94,7 @@ default_args = {
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
-    'retry_delay': timedelta(minutes=5)
+    'retry_delay': timedelta(minutes=1)
 } 
 
 # Using a DAG context manager
@@ -105,13 +111,20 @@ with DAG('record_weather_dags',
     # A dummy task to manage a group of tasks
     t0 = DummyOperator(task_id='start')
 
-    # A task to send email
-    send_email = EmailOperator(
-        task_id='send_email',
-        to=['k4tang@gmail.com'],
-        subject='Saving Weather Data to CSV',
-        html_content='<p>Fetching weather successfully. Files can now be found in export folder. <p>'
+    # A task to print msg
+    print_msg = PythonOperator(
+        task_id='print_msg',
+        python_callable=PrintMsg,
+        dag=dag,
     )
+
+    # A task to send email
+    # send_email = EmailOperator(
+    #     task_id='send_email',
+    #     to=['k4tang@gmail.com'],
+    #     subject='Saving Weather Data to CSV',
+    #     html_content='<p>Fetching weather successfully. Files can now be found in export folder. <p>'
+    # )
 
     # Main task to fetch weather data
     with TaskGroup('weather_task_group') as weather_group:
@@ -136,7 +149,7 @@ with DAG('record_weather_dags',
     #     op_kwargs={'city': 'Montreal', 'filename': filename},
     #     dag=dag,
     # )
-    t0 >> weather_group >> send_email
+    t0 >> weather_group >> print_msg
 
     # t0 >> [weather_toronto, weather_montreal] >> send_email
 

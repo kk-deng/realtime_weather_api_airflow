@@ -102,8 +102,10 @@ with DAG('record_weather_dags',
          tags=['weather', 'toronto']
          ) as dag:
 
+    # A dummy task to manage a group of tasks
     t0 = DummyOperator(task_id='start')
 
+    # A task to send email
     send_email = EmailOperator(
         task_id='send_email',
         to=['k4tang@gmail.com'],
@@ -111,32 +113,33 @@ with DAG('record_weather_dags',
         html_content='<p>Fetching weather successfully. Files can now be found in export folder. <p>'
     )
 
-    # with TaskGroup('weather_task_group') as weather_group:
-    #     for city in cities:
-    #         print(city)
-    #         generate_files = PythonOperator(
-    #             task_id='generate_file_{0}'.format(city),
-    #             python_callable=UpdateCsvFile,
-    #             op_kwargs={'city': city, 'filename': filename}
-    #         )
+    # Main task to fetch weather data
+    with TaskGroup('weather_task_group') as weather_group:
+        for city in cities:
+            print(city)
+            generate_files = PythonOperator(
+                task_id='generate_file_{0}'.format(city),
+                python_callable=UpdateCsvFile,
+                op_kwargs={'city': city, 'filename': filename}
+            )
     
-    weather_toronto = PythonOperator(
-        task_id='weather_toronto',
-        python_callable=UpdateCsvFile,
-        op_kwargs={'city': 'Toronto', 'filename': filename},
-        provide_context=True,
-        dag=dag,
-    )
+    # weather_toronto = PythonOperator(
+    #     task_id='weather_toronto',
+    #     python_callable=UpdateCsvFile,
+    #     op_kwargs={'city': 'Toronto', 'filename': filename},
+    #     dag=dag,
+    # )
 
-    weather_montreal = PythonOperator(
-        task_id='weather_montreal',
-        python_callable=UpdateCsvFile,
-        op_kwargs={'city': 'Montreal', 'filename': filename},
-        provide_context=True,
-        dag=dag,
-    )
-        
-    t0 >> [weather_toronto, weather_montreal] >> send_email
+    # weather_montreal = PythonOperator(
+    #     task_id='weather_montreal',
+    #     python_callable=UpdateCsvFile,
+    #     op_kwargs={'city': 'Montreal', 'filename': filename},
+    #     dag=dag,
+    # )
+    t0 >> weather_group >> send_email
 
+    # t0 >> [weather_toronto, weather_montreal] >> send_email
+
+# Testing locally 
 # if __name__ == "__main__":
 #     UpdateCsvFile(filename)

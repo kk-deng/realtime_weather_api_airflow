@@ -1,10 +1,7 @@
 import time
-import json
 import requests
 import pandas as pd
 from resources.api_key import api_key
-
-
 
 def FetchOpenWeather(city):
     """
@@ -12,7 +9,7 @@ def FetchOpenWeather(city):
     Response consists of cloudiness, country, date,
     humidity, lat, lng, max temp, wind speed, etc.
     """
-    
+
     url = "http://api.openweathermap.org/data/2.5/weather?"
     # Create a list for weather data
     city_data = []

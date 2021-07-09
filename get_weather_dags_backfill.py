@@ -26,7 +26,7 @@ default_args = {
 # While using Backfill and Catchup, make sure:
 # 1. Always use static date, don't use relative date
 # 2. Dags should be idempotent (i.e. reproducible with same inputs)
-with DAG('record_weather_dags',
+with DAG('record_weather_dags_backfill',
          start_date=datetime(2021, 7, 9),
          max_active_runs=1,
          schedule_interval=timedelta(minutes=5),

@@ -1,7 +1,7 @@
 # date: 2021-07-07
 # summary: Getting Toronto Temperatures
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 from airflow.utils.dates import days_ago
 from airflow.models import DAG
 from airflow.operators.python import PythonOperator
@@ -23,12 +23,15 @@ default_args = {
 } 
 
 # Using a DAG context manager
+# While using Backfill and Catchup, make sure:
+# 1. Always use static date, don't use relative date
+# 2. Dags should be idempotent (i.e. reproducible with same inputs)
 with DAG('record_weather_dags',
-         start_date=days_ago(1),
+         start_date=datetime(2021, 7, 9),
          max_active_runs=1,
          schedule_interval=timedelta(minutes=5),
          default_args=default_args,
-         catchup=False,
+         catchup=True,
          tags=['weather', 'toronto']
          ) as dag:
 
